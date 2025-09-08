@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Qatar University Admissions Chat</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .bubble-user { background:#2563eb; color:white; }
+    .bubble-bot  { background:#f3f4f6; color:#111827; }
+    .bubble { max-width: 80%; padding: .6rem .8rem; border-radius: 1rem; }
+    .mono { font-family: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace; }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+  <div class="max-w-3xl mx-auto h-screen flex flex-col">
+    <!-- Header -->
+    <header class="py-4 px-4 sm:px-0">
+      <div class="flex justify-between items-start">
+        <div>
+          <h1 class="text-2xl font-semibold">Qatar University Admissions Chat</h1>
+          <p class="text-sm text-gray-500">Uses your Azure AI Search index + Azure OpenAI with session management.</p>
+          <div id="historyStats" class="text-xs text-gray-400 mt-2"></div>
+        </div>
+        <div class="flex gap-2">
+          <button id="newSessionBtn" class="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700">New Session</button>
+          <button id="clearHistoryBtn" class="px-3 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700">Clear History</button>
+        </div>
+      </div>
+      <div id="sessionInfo" class="text-xs text-blue-600 mt-1"></div>
+    </header>
+
+    <!-- Messages -->
+    <main id="messages" class="flex-1 overflow-y-auto px-4 sm:px-0 space-y-3 pb-4">
+      <div class="flex gap-2">
+        <div class="bubble bubble-bot rounded-2xl">
+          Hi! I'm your QU admissions assistant. Ask me about requirements, steps, deadlines, or fees.
+        </div>
+      </div>
+    </main>
+
+    <!-- Composer -->
+    <form id="composer" class="p-4 sm:px-0 flex gap-2 border-t bg-white" onsubmit="sendMsg(event)">
+      <textarea id="msg" class="flex-1 border rounded-lg p-3 outline-none focus:ring w-full"
+                rows="2" placeholder="Type your message... (Shift+Enter for newline)"></textarea>
+      <button id="sendBtn" class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Send</button>
+    </form>
+  </div>
+
+  <script>
+    const API = '/chat'; // same origin (FastAPI)
+    const messagesEl = document.getElementById('messages');
+    const inputEl    = document.getElementById('msg');
+    const sendBtn    = document.getElementById('sendBtn');
+    const newSessionBtn = document.getElementById('newSessionBtn');
+    const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+    const sessionInfoEl = document.getElementById('sessionInfo');
+    const historyStatsEl = document.getElementById('historyStats');
+
+    // Session management
+    let currentSessionId = localStorage.getItem('qu_session_id');
+    
+    // Initialize session on page load
+    async function initializeSession() {
+      if (!currentSessionId) {
+        // Create new session
+        try {
+          const response = await fetch('/session/new', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({})
+          });
+          const data = await response.json();
+          if (data.session_id) {
+            currentSessionId = data.session_id;
+            localStorage.setItem('qu_session_id', currentSessionId);
+            updateSessionInfo();
+          }
+        } catch (err) {
+          console.error('Failed to create new session:', err);
+        }
+      } else {
+        updateSessionInfo();
+      }
+      
+      // Load history stats
+      loadHistoryStats();
+    }
+
+    function updateSessionInfo() {
+      if (currentSessionId) {
+        sessionInfoEl.textContent = `Session: ${currentSessionId}`;
+      }
+    }
+
+    function addBubble(text, who='bot', sources=[]) {
+      const wrap = document.createElement('div');
+      wrap.className = 'flex gap-2 ' + (who === 'user' ? 'justify-end' : '');
+      const b = document.createElement('div');
+      b.className = 'bubble ' + (who === 'user' ? 'bubble-user' : 'bubble-bot') + ' rounded-2xl';
+      b.innerText = text;
+      wrap.appendChild(b);
+
+      // show sources (names) under bot messages if present
+      if (who === 'bot' && sources && sources.length) {
+        const src = document.createElement('div');
+        src.className = 'text-xs text-gray-500 mt-1 mono';
+        src.textContent = 'Sources: ' + sources.map(s => s.name).join(', ');
+        const container = document.createElement('div');
+        container.className = 'flex flex-col';
+        container.appendChild(b);
+        container.appendChild(src);
+        wrap.innerHTML = '';
+        wrap.appendChild(container);
+      }
+
+      messagesEl.appendChild(wrap);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    async function sendMsg(e) {
+      e.preventDefault();
+      const text = inputEl.value.trim();
+      if (!text) return;
+
+      addBubble(text, 'user');
+      inputEl.value = '';
+      inputEl.focus();
+      sendBtn.disabled = true;
+
+      try {
+        const res = await fetch(API, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'X-Session-ID': currentSessionId
+          },
+          body: JSON.stringify({ 
+            message: text, 
+            top: 5,
+            session_id: currentSessionId
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data?.detail || 'Request failed');
+        
+        // Update session ID if a new one was created
+        if (data.session_id && data.session_id !== currentSessionId) {
+          currentSessionId = data.session_id;
+          localStorage.setItem('qu_session_id', currentSessionId);
+          updateSessionInfo();
+        }
+        
+        addBubble(data.answer || '(no answer)', 'bot', data.sources || []);
+        
+        // Update history stats after message
+        loadHistoryStats();
+      } catch (err) {
+        addBubble('Error: ' + err.message, 'bot');
+      } finally {
+        sendBtn.disabled = false;
+      }
+    }
+
+    async function createNewSession() {
+      try {
+        const response = await fetch('/session/new', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ session_id: currentSessionId })
+        });
+        const data = await response.json();
+        if (data.session_id) {
+          currentSessionId = data.session_id;
+          localStorage.setItem('qu_session_id', currentSessionId);
+          updateSessionInfo();
+          
+          // Clear messages and add welcome message
+          messagesEl.innerHTML = '';
+          addBubble('Hi! I\'m your QU admissions assistant. Ask me about requirements, steps, deadlines, or fees.', 'bot');
+          
+          // Update stats
+          loadHistoryStats();
+        }
+      } catch (err) {
+        console.error('Failed to create new session:', err);
+        addBubble('Error: Failed to create new session', 'bot');
+      }
+    }
+
+    async function clearHistory() {
+      if (!currentSessionId) return;
+      
+      try {
+        const response = await fetch('/chat/history/clear', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ session_id: currentSessionId })
+        });
+        const data = await response.json();
+        if (data.status === 'success') {
+          // Clear messages and add welcome message
+          messagesEl.innerHTML = '';
+          addBubble('Hi! I\'m your QU admissions assistant. Ask me about requirements, steps, deadlines, or fees.', 'bot');
+          
+          // Update stats
+          loadHistoryStats();
+        }
+      } catch (err) {
+        console.error('Failed to clear history:', err);
+        addBubble('Error: Failed to clear history', 'bot');
+      }
+    }
+
+    // Enter to send (Shift+Enter = newline)
+    inputEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        document.getElementById('composer').dispatchEvent(new Event('submit'));
+      }
+    });
+
+    // Button event listeners
+    newSessionBtn.addEventListener('click', createNewSession);
+    clearHistoryBtn.addEventListener('click', clearHistory);
+
+    // Load chat history statistics
+    async function loadHistoryStats() {
+      if (!currentSessionId) return;
+      
+      try {
+        const res = await fetch(`/chat/history/stats?session_id=${currentSessionId}`);
+        if (res.ok) {
+          const stats = await res.json();
+          if (stats.total_messages > 0) {
+            historyStatsEl.textContent = `History: ${stats.user_messages} user, ${stats.assistant_messages} assistant messages (${stats.needs_reduction ? 'reduction needed' : 'within limits'})`;
+          } else {
+            historyStatsEl.textContent = 'No conversation history yet';
+          }
+        }
+      } catch (err) {
+        // Ignore errors for stats
+        console.error('Failed to load history stats:', err);
+      }
+    }
+
+    // Initialize on page load
+    initializeSession();
+  </script>
+</body>
+</html>
