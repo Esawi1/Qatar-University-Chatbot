@@ -8,18 +8,32 @@ from azure.search.documents import SearchClient
 
 load_dotenv(find_dotenv(), override=True)
 
-ENDPOINT   = os.environ["AZURE_SEARCH_ENDPOINT"]
-INDEX_NAME = os.environ["AZURE_SEARCH_INDEX"]
-API_KEY    = os.environ["AZURE_SEARCH_KEY"]
+# Check if search service is available
+HAVE_SEARCH = all([
+    os.getenv("AZURE_SEARCH_ENDPOINT"),
+    os.getenv("AZURE_SEARCH_INDEX"),
+    os.getenv("AZURE_SEARCH_KEY")
+])
 
-_client = SearchClient(endpoint=ENDPOINT, index_name=INDEX_NAME,
-                       credential=AzureKeyCredential(API_KEY))
+if HAVE_SEARCH:
+    ENDPOINT   = os.environ["AZURE_SEARCH_ENDPOINT"]
+    INDEX_NAME = os.environ["AZURE_SEARCH_INDEX"]
+    API_KEY    = os.environ["AZURE_SEARCH_KEY"]
+    
+    _client = SearchClient(endpoint=ENDPOINT, index_name=INDEX_NAME,
+                           credential=AzureKeyCredential(API_KEY))
+else:
+    _client = None
 
 def run_search(query: str, top: int = 5) -> List[Dict[str, Any]]:
     """
     Runs a simple full-text search against the index, returns a list of hits.
     Works with azure-search-documents 11.5.x (no query_language kwarg).
     """
+    if not HAVE_SEARCH:
+        print("Search service not available - returning empty results")
+        return []
+        
     try:
         # Fall back to "*" if query is empty (avoid 400s)
         search_text = query.strip() or "*"
