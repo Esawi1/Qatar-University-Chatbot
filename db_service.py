@@ -95,7 +95,7 @@ def get_history(session_id: str, limit: Optional[int] = None) -> List[Dict]:
         doc = container.read_item(item=session_id, partition_key=session_id)
         hist = doc.get("history", [])
         if limit:
-            return hist[-2 * int(limit) :]
+            return hist[-2 * int(limit or "0") :]
         return hist
     except exceptions.CosmosResourceNotFoundError:
         try:
@@ -104,7 +104,7 @@ def get_history(session_id: str, limit: Optional[int] = None) -> List[Dict]:
             if items:
                 hist = items[0].get("history", [])
                 if limit:
-                    return hist[-2 * int(limit) :]
+                    return hist[-2 * int(limit or "0") :]
                 return hist
             return []
         except Exception as e:
