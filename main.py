@@ -20,7 +20,7 @@ AOAI_DEPLOYMENT  = os.environ["AZURE_OPENAI_DEPLOYMENT"]
 AOAI_API_VERSION = os.getenv("AZURE_OPENAI_API_VERSION", "2024-06-01")
 
 # How many (user,assistant) pairs to include from history
-HISTORY_PAIRS = int(os.getenv("HISTORY_PAIRS", "3"))
+HISTORY_PAIRS = int(os.getenv("HISTORY_PAIRS", "3") or "3")
 
 # Local "About QU" knowledge (optional)
 ABOUT_QU_PATH = os.getenv("ABOUT_QU_PATH", os.path.join("kb", "about_qu.md"))
@@ -38,7 +38,6 @@ aoai = AzureOpenAI(
     api_version=AOAI_API_VERSION,
 )
 
-# ---------- Chat History Manager ----------
 try:
     from chat_history_manager import QUChatHistoryManager
     HAVE_CHAT_HISTORY = True
@@ -448,7 +447,6 @@ def get_session_info(session_id: str):
         logging.exception("Failed to get session info")
         return JSONResponse(status_code=500, content={"error": str(e)})
 
-# ---------- Chat History Management Endpoints ----------
 
 @app.get("/chat/history/stats")
 def get_chat_history_stats(session_id: Optional[str] = None):
