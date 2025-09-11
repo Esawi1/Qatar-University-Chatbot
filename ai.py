@@ -15,25 +15,36 @@ DEPLOYMENT = os.environ["AZURE_OPENAI_DEPLOYMENT"]
 def answer_question(query: str, top: int = 5):
     hits = run_search(query, top)
 
-    # Build short, grounded context from search
     lines = []
     for i, h in enumerate(hits, start=1):
         snippet = (h.get("snippet") or "").replace("\n", " ")
         lines.append(f"[{i}] {h.get('name')}: {snippet}")
     context = "\n".join(lines) if lines else "No results."
 
+    # Enhanced system prompt for more conversational and intelligent responses
     system = (
-        "You are a Qatar University admissions assistant. "
-        "Answer STRICTLY from the provided context. "
-        "If the answer is not present, say: "
-        "'I don't know from the indexed admissions documents yet.' "
-        "Be concise and include sources like [1], [2] when possible."
+        "You are a friendly and helpful Qatar University admissions assistant. "
+        "Your primary role is to help students with Qatar University admissions, programs, and general information. "
+        
+        "For Qatar University-related questions (admissions, programs, requirements, deadlines, fees, etc.): "
+        "- Use the provided context from the indexed documents to give accurate, detailed answers "
+        "- Include source references like [1], [2] when citing specific information "
+        "- If the context doesn't contain the answer, say: 'I don't have specific information about that in the current documents. Please contact Qatar University admissions directly for the most up-to-date information.' "
+        
+        "For general conversation (greetings, casual questions, etc.): "
+        "- Be warm, friendly, and conversational "
+        "- Briefly introduce yourself as the QU admissions assistant "
+        "- Gently steer the conversation toward how you can help with Qatar University questions "
+        "- Keep responses natural and engaging "
+        
+        "Always maintain a helpful, professional, and encouraging tone. "
+        "Be concise but informative. Make the user feel welcome and supported."
     )
     user = f"Question: {query}\n\nContext:\n{context}"
 
     resp = client.chat.completions.create(
         model=DEPLOYMENT,
-        temperature=0,
+        temperature=0.7,  # Slightly higher temperature for more natural responses
         messages=[
             {"role": "system", "content": system},
             {"role": "user", "content": user},
