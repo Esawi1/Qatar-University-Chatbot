@@ -63,16 +63,36 @@ def chat():
         # Get recent history
         history = chat_sessions[session_id][-HISTORY_PAIRS*2:] if HISTORY_PAIRS > 0 else []
         
-        # Use Azure Search + OpenAI for intelligent responses
-        try:
-            result = answer_question(message, top=5)
-            bot_response = result['answer']
-            sources = result['sources']
-        except Exception as search_error:
-            logging.warning(f"Search failed: {search_error}, falling back to basic response")
-            # Fallback to basic response if search fails
-            bot_response = "I'm having trouble accessing the Qatar University documents right now. Please try again later or contact QU admissions directly."
+        # Check if this is a basic conversational question
+        basic_greetings = ['hi', 'hello', 'hey', 'good morning', 'good afternoon', 'good evening']
+        basic_questions = ['how are you', 'how are you doing', 'what is your name', 'who are you', 'thanks', 'thank you']
+        
+        message_lower = message.lower().strip()
+        
+        if any(greeting in message_lower for greeting in basic_greetings):
+            bot_response = "Hello! I'm your Qatar University admissions assistant. How can I help you today with questions about QU admissions, programs, or requirements?"
             sources = []
+        elif any(question in message_lower for question in basic_questions):
+            if 'how are you' in message_lower:
+                bot_response = "I'm doing great, thank you for asking! I'm here to help you with all your Qatar University questions. What would you like to know about QU admissions or programs?"
+            elif 'name' in message_lower or 'who are you' in message_lower:
+                bot_response = "I'm the Qatar University Admissions Assistant! I can help you with questions about admissions requirements, application deadlines, programs, fees, and other QU-related information. What would you like to know?"
+            elif 'thank' in message_lower:
+                bot_response = "You're very welcome! I'm happy to help. Feel free to ask me any other questions about Qatar University!"
+            else:
+                bot_response = "I'm here to help you with Qatar University questions! What would you like to know about admissions, programs, or requirements?"
+            sources = []
+        else:
+            # Use Azure Search + OpenAI for QU-specific questions
+            try:
+                result = answer_question(message, top=5)
+                bot_response = result['answer']
+                sources = result['sources']
+            except Exception as search_error:
+                logging.warning(f"Search failed: {search_error}, falling back to basic response")
+                # Fallback to basic response if search fails
+                bot_response = "I'm having trouble accessing the Qatar University documents right now. Please try again later or contact QU admissions directly."
+                sources = []
         
         # Store in session history
         chat_sessions[session_id].append({
