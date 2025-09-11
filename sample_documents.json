@@ -1,0 +1,50 @@
+[
+  {
+    "id": "1",
+    "title": "Qatar University Admission Requirements",
+    "content": "Qatar University admission requirements include: High school certificate equivalent to Qatar's secondary school certificate, English proficiency test (IELTS 5.5+ or TOEFL 500+) for English programs, Arabic proficiency for Arabic programs, Application fee of 200 QAR (non-refundable), Application period usually opens in January and closes in March. Required documents include original high school certificate (attested), passport copy, recent passport photos, English/Arabic proficiency test results, completed application form, and application fee payment receipt.",
+    "category": "Admissions",
+    "metadata_storage_name": "admission_requirements.pdf",
+    "metadata_storage_path": "/documents/admission_requirements.pdf"
+  },
+  {
+    "id": "2", 
+    "title": "Qatar University Tuition Fees",
+    "content": "Qatar University tuition fees for 2024-2025: Qatari students pay 1,000 QAR per credit hour, Non-Qatari students pay 1,500 QAR per credit hour, International students pay 2,000 QAR per credit hour. Additional fees include registration fees, lab fees, and library fees. Scholarships and financial aid are available including merit scholarships based on academic performance, need-based aid for financially disadvantaged students, government scholarships for Qatari nationals, and limited international scholarships.",
+    "category": "Fees",
+    "metadata_storage_name": "tuition_fees.pdf",
+    "metadata_storage_path": "/documents/tuition_fees.pdf"
+  },
+  {
+    "id": "3",
+    "title": "Engineering Programs at Qatar University",
+    "content": "Qatar University offers comprehensive engineering programs including Computer Science requiring high school GPA 3.0+ with Math/Science focus, Civil Engineering requiring Physics and Math, Mechanical Engineering requiring strong Math/Science background, Electrical Engineering requiring Physics, Math, and Chemistry. All engineering programs are 4-5 years duration with 140+ credit hours and are ABET accredited. Research areas include sustainable engineering, smart cities, and renewable energy.",
+    "category": "Programs",
+    "metadata_storage_name": "engineering_programs.pdf", 
+    "metadata_storage_path": "/documents/engineering_programs.pdf"
+  },
+  {
+    "id": "4",
+    "title": "Business Programs at Qatar University",
+    "content": "Qatar University College of Business and Economics offers Business Administration with general business focus, Accounting requiring Math and analytical skills, Finance requiring strong quantitative background, Marketing requiring communication skills. All business programs are 4 years duration with 120+ credit hours. The college has AACSB International accreditation and offers BBA, MBA, Executive MBA, and PhD in Business Administration programs.",
+    "category": "Programs",
+    "metadata_storage_name": "business_programs.pdf",
+    "metadata_storage_path": "/documents/business_programs.pdf"
+  },
+  {
+    "id": "5",
+    "title": "Health Sciences Programs at Qatar University",
+    "content": "Qatar University Health Cluster includes College of Medicine with highly competitive MD program requiring MCAT, College of Pharmacy with Doctor of Pharmacy (PharmD) requiring strong Chemistry/Biology background, College of Health Sciences with Nursing programs requiring compassionate healthcare focus, College of Dental Medicine with Doctor of Dental Medicine (DMD) requiring manual dexterity. Programs range from 4-6 years duration depending on specialization.",
+    "category": "Programs", 
+    "metadata_storage_name": "health_sciences.pdf",
+    "metadata_storage_path": "/documents/health_sciences.pdf"
+  },
+  {
+    "id": "6",
+    "title": "Application Deadlines and Process",
+    "content": "Qatar University application deadlines: Fall semester application deadline is usually March 31, Spring semester application deadline is usually October 31. Document submission must be completed within 30 days of application. Entrance exams are scheduled after application review. Registration occurs after acceptance and before semester starts. The application process includes online application submission through QU website, document verification with original documents, entrance exam (may be required for some programs), interview (required for certain programs), acceptance letter received via email/portal, and completion of enrollment process.",
+    "category": "Admissions",
+    "metadata_storage_name": "application_deadlines.pdf",
+    "metadata_storage_path": "/documents/application_deadlines.pdf"
+  }
+]
