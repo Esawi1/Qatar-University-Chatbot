@@ -44,7 +44,7 @@ def static_files(filename):
 
 @app.route('/chat', methods=['POST'])
 def chat():
-    """Simple chat endpoint"""
+    """Chat endpoint with Azure Search integration"""
     try:
         data = request.get_json()
         message = data.get('message', '')
@@ -53,6 +53,9 @@ def chat():
         if not message:
             return jsonify({'error': 'No message provided'}), 400
         
+        # Import search functionality
+        from ai import answer_question
+        
         # Get or create session
         if session_id not in chat_sessions:
             chat_sessions[session_id] = []
@@ -60,32 +63,16 @@ def chat():
         # Get recent history
         history = chat_sessions[session_id][-HISTORY_PAIRS*2:] if HISTORY_PAIRS > 0 else []
         
-        # Prepare messages for OpenAI
-        messages = []
-        
-        # Add system message
-        messages.append({
-            "role": "system",
-            "content": "You are the Qatar University Assistant. Help users with questions about Qatar University admissions, programs, and general information."
-        })
-        
-        # Add conversation history
-        for turn in history:
-            messages.append({"role": "user", "content": turn.get('user', '')})
-            messages.append({"role": "assistant", "content": turn.get('bot', '')})
-        
-        # Add current message
-        messages.append({"role": "user", "content": message})
-        
-        # Get response from Azure OpenAI
-        response = aoai.chat.completions.create(
-            model=AOAI_DEPLOYMENT,
-            messages=messages,
-            temperature=0.7,
-            max_tokens=1000
-        )
-        
-        bot_response = response.choices[0].message.content
+        # Use Azure Search + OpenAI for intelligent responses
+        try:
+            result = answer_question(message, top=5)
+            bot_response = result['answer']
+            sources = result['sources']
+        except Exception as search_error:
+            logging.warning(f"Search failed: {search_error}, falling back to basic response")
+            # Fallback to basic response if search fails
+            bot_response = "I'm having trouble accessing the Qatar University documents right now. Please try again later or contact QU admissions directly."
+            sources = []
         
         # Store in session history
         chat_sessions[session_id].append({
@@ -95,7 +82,8 @@ def chat():
         
         return jsonify({
             'response': bot_response,
-            'session_id': session_id
+            'session_id': session_id,
+            'sources': sources
         })
         
     except Exception as e:
