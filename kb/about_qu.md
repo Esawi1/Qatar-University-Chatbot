@@ -1,7 +1,88 @@
-# About Qatar University (QU)
+# Qatar University (QU) - Complete Information Guide
 
 ## Overview
 Qatar University (QU) is Qatar's national public university, established in 1973. Located in Doha, QU serves as the country's premier institution of higher education, offering world-class academic programs and research opportunities.
+
+## Admissions Information
+
+### Application Requirements
+- **High School Certificate**: Must be equivalent to Qatar's secondary school certificate
+- **English Proficiency**: IELTS 5.5+ or TOEFL 500+ (for English programs)
+- **Arabic Proficiency**: Required for Arabic programs
+- **Application Fee**: 200 QAR (non-refundable)
+- **Application Period**: Usually opens in January, closes in March
+
+### Required Documents
+- Original high school certificate (attested)
+- Passport copy
+- Recent passport photos
+- English/Arabic proficiency test results
+- Application form (completed online)
+- Application fee payment receipt
+
+### Admission Process
+1. **Online Application**: Submit through QU website
+2. **Document Verification**: Submit original documents
+3. **Entrance Exam**: May be required for some programs
+4. **Interview**: Required for certain programs
+5. **Acceptance Letter**: Received via email/portal
+6. **Registration**: Complete enrollment process
+
+### Tuition Fees (2024-2025)
+- **Qatari Students**: 1,000 QAR per credit hour
+- **Non-Qatari Students**: 1,500 QAR per credit hour
+- **International Students**: 2,000 QAR per credit hour
+- **Additional Fees**: Registration, lab, library fees apply
+
+### Scholarships and Financial Aid
+- **Merit Scholarships**: Based on academic performance
+- **Need-based Aid**: For financially disadvantaged students
+- **Government Scholarships**: Available for Qatari nationals
+- **International Scholarships**: Limited availability
+
+### Academic Programs and Requirements
+
+#### Engineering Programs
+- **Computer Science**: High school GPA 3.0+, Math/Science focus
+- **Civil Engineering**: Physics and Math required
+- **Mechanical Engineering**: Strong Math/Science background
+- **Electrical Engineering**: Physics, Math, Chemistry required
+- **Duration**: 4-5 years, 140+ credit hours
+
+#### Business Programs
+- **Business Administration**: General business focus
+- **Accounting**: Math and analytical skills required
+- **Finance**: Strong quantitative background
+- **Marketing**: Communication skills important
+- **Duration**: 4 years, 120+ credit hours
+
+#### Health Sciences
+- **Medicine**: Highly competitive, MCAT required
+- **Pharmacy**: Strong Chemistry/Biology background
+- **Nursing**: Compassionate, healthcare-focused
+- **Dental Medicine**: Manual dexterity required
+- **Duration**: 4-6 years depending on program
+
+#### Arts and Sciences
+- **English Literature**: Strong language skills
+- **Mathematics**: Advanced Math background
+- **Biology**: Lab work and research focus
+- **Psychology**: Understanding human behavior
+- **Duration**: 4 years, 120+ credit hours
+
+### Important Deadlines
+- **Fall Semester**: Application deadline usually March 31
+- **Spring Semester**: Application deadline usually October 31
+- **Document Submission**: Within 30 days of application
+- **Entrance Exams**: Scheduled after application review
+- **Registration**: After acceptance, before semester starts
+
+### Contact Information
+- **Admissions Office**: +974 4403 4444
+- **Email**: admissions@qu.edu.qa
+- **Website**: www.qu.edu.qa/admissions
+- **Office Hours**: Sunday-Thursday, 8:00 AM - 4:00 PM
+- **Location**: Student Affairs Building, Main Campus
 
 ## Location and Campus
 - **Main Campus**: Doha, Qatar

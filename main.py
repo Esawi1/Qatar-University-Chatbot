@@ -1,4 +1,3 @@
-# main.py
 import os
 import logging
 from typing import List, Dict, Optional
@@ -8,9 +7,8 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from dotenv import load_dotenv, find_dotenv
 
-from search_client import run_search
+from search_client import run_search, HAVE_SEARCH
 
-# ---------- ENV ----------
 load_dotenv(find_dotenv(), override=True)
 logging.basicConfig(level=logging.INFO)
 
@@ -19,10 +17,8 @@ AOAI_KEY         = os.environ["AZURE_OPENAI_KEY"]
 AOAI_DEPLOYMENT  = os.environ["AZURE_OPENAI_DEPLOYMENT"]
 AOAI_API_VERSION = os.getenv("AZURE_OPENAI_API_VERSION", "2024-06-01")
 
-# How many (user,assistant) pairs to include from history
 HISTORY_PAIRS = int(os.getenv("HISTORY_PAIRS", "3") or "3")
 
-# Local "About QU" knowledge (optional)
 ABOUT_QU_PATH = os.getenv("ABOUT_QU_PATH", os.path.join("kb", "about_qu.md"))
 try:
     with open(ABOUT_QU_PATH, "r", encoding="utf-8") as f:
@@ -187,12 +183,13 @@ def _aoai_answer_direct(mode: str, question: str, context: str, sources: str, hi
             "- Provide consistent answers based on previous interactions "
             "- Acknowledge when the user is referring to previous questions "
             "- Correctly answer questions about what was discussed earlier "
-            "Keep answers concise and helpful. "
+            "Keep answers concise and helpful (2-4 sentences). "
             "CHITCHAT: 1-2 friendly sentences, acknowledging conversation context when relevant. "
-            "ADMISSIONS: Answer from context when available, but you can also answer general Qatar University questions using your knowledge. "
-            "ABOUT_QU: use the About-QU context only. "
+            "ADMISSIONS: Answer from the provided context about Qatar University admissions, requirements, programs, fees, deadlines, and procedures. "
+            "ABOUT_QU: Answer from the provided context about Qatar University general information, campus, programs, and contact details. "
             "ALWAYS check the conversation history before answering questions about what was discussed. "
-            "If unknown, say you don't know. I'm here to assist you with Qatar University admission details and general information."
+            "If the specific information is not in the provided context, say 'I don't have that specific information in my current knowledge base, but I can help you with general Qatar University information.' "
+            "Always be helpful and guide users to contact the admissions office for detailed information."
         )
         
         user = (
@@ -234,6 +231,8 @@ def root():
         "sk": USE_SK,
         "about_qu_loaded": bool(ABOUT_QU_TEXT),
         "active_sessions": len(chat_history_managers),
+        "azure_search_available": HAVE_SEARCH,
+        "azure_openai_configured": bool(AOAI_ENDPOINT and AOAI_KEY and AOAI_DEPLOYMENT),
     }
 
 @app.get("/test-aoai")
@@ -318,13 +317,38 @@ async def chat(body: ChatReq, request: Request):
         else:
             history_text = ""
 
-        # Simple routing logic
+        # Enhanced routing logic for better responses without Azure Search
         question_lower = body.message.lower()
-        if any(word in question_lower for word in ['hello', 'hi', 'hey', 'thanks', 'thank you', 'bye']):
+        
+        # Define keywords for different categories
+        admissions_keywords = [
+            'admission', 'apply', 'application', 'requirements', 'deadline', 'fee', 'tuition',
+            'scholarship', 'financial aid', 'documents', 'certificate', 'ielts', 'toefl',
+            'entrance exam', 'interview', 'acceptance', 'registration', 'enrollment',
+            'engineering', 'business', 'medicine', 'pharmacy', 'nursing', 'computer science',
+            'civil engineering', 'mechanical', 'electrical', 'accounting', 'finance', 'marketing'
+        ]
+        
+        about_qu_keywords = [
+            'qu', 'qatar university', 'university', 'college', 'campus', 'location',
+            'established', 'history', 'overview', 'about', 'information', 'contact',
+            'phone', 'email', 'website', 'address', 'facilities', 'library', 'research'
+        ]
+        
+        chitchat_keywords = [
+            'hello', 'hi', 'hey', 'thanks', 'thank you', 'bye', 'goodbye',
+            'how are you', 'what can you do', 'help', 'assistance'
+        ]
+        
+        # Determine mode based on keyword matching
+        if any(word in question_lower for word in chitchat_keywords):
             mode = "CHITCHAT"
-        elif any(word in question_lower for word in ['qu', 'qatar university', 'university', 'college', 'campus']):
+        elif any(word in question_lower for word in admissions_keywords):
+            mode = "ADMISSIONS"
+        elif any(word in question_lower for word in about_qu_keywords):
             mode = "ABOUT_QU"
         else:
+            # Default to ADMISSIONS for general queries
             mode = "ADMISSIONS"
 
         # Build context & sources per mode
@@ -337,15 +361,26 @@ async def chat(body: ChatReq, request: Request):
             pass  # no search/context needed
         elif mode == "ABOUT_QU":
             context = ABOUT_QU_TEXT or ""
-            sources = "[1] Local knowledge: About Qatar University"
+            sources = "[1] Qatar University Information Guide"
         else:  # ADMISSIONS
-            try:
-                hits = run_search(effective_query, body.top)
-                context = _format_context(hits)
-                sources = _format_sources(hits)
-            except Exception as e:
-                logging.warning(f"Search failed: {e}")
-                hits = []
+            # Use local knowledge base for admissions since Azure Search is not available
+            context = ABOUT_QU_TEXT or ""
+            sources = "[1] Qatar University Admissions Guide"
+            
+            # Try Azure Search if available (for future use)
+            if HAVE_SEARCH:
+                try:
+                    hits = run_search(effective_query, body.top)
+                    if hits:  # If search returns results, use them
+                        context = _format_context(hits)
+                        sources = _format_sources(hits)
+                    else:  # Fallback to local knowledge
+                        context = ABOUT_QU_TEXT or ""
+                        sources = "[1] Qatar University Admissions Guide"
+                except Exception as e:
+                    logging.warning(f"Search failed, using local knowledge: {e}")
+                    context = ABOUT_QU_TEXT or ""
+                    sources = "[1] Qatar University Admissions Guide"
 
         # Generate answer using direct AOAI (simplified approach)
         answer = ""
@@ -356,7 +391,16 @@ async def chat(body: ChatReq, request: Request):
         if chat_history_manager:
             enhanced_history = chat_history_manager.get_formatted_history(10)  # Get more history
         
-        answer = _aoai_answer_direct(mode, body.message, context, sources, enhanced_history)
+        # Check if we have any context to work with
+        if not context and mode != "CHITCHAT":
+            if mode == "ADMISSIONS":
+                answer = "I apologize, but I'm currently unable to access the admissions documents. Please check that the Azure Search service is properly configured and indexed with PDF documents."
+            elif mode == "ABOUT_QU":
+                answer = "I apologize, but I'm currently unable to access the Qatar University information. Please check the local knowledge base configuration."
+            else:
+                answer = "I apologize, but I'm having trouble accessing the information you requested. Please try again later."
+        else:
+            answer = _aoai_answer_direct(mode, body.message, context, sources, enhanced_history)
 
         # Ensure we have a valid answer
         if not answer or answer.strip() == "":

@@ -1,0 +1,26 @@
+# Azure Environment Variables Template
+# Copy these to your Azure App Service Configuration -> Application Settings
+
+# Azure OpenAI Configuration (from your existing oai-ai-rd-sc resource)
+AZURE_OPENAI_ENDPOINT=https://oai-ai-rd-sc.openai.azure.com/
+AZURE_OPENAI_KEY=your-openai-key-here
+AZURE_OPENAI_DEPLOYMENT=your-deployment-name
+AZURE_OPENAI_API_VERSION=2024-06-01
+
+# Azure Search Configuration (DISABLED - service not available)
+# AZURE_SEARCH_ENDPOINT=
+# AZURE_SEARCH_INDEX=
+# AZURE_SEARCH_KEY=
+
+# Cosmos DB Configuration (from your existing cosno-ai-rd-sc resource)
+COSMOS_ENDPOINT=https://cosno-ai-rd-sc.documents.azure.com:443/
+COSMOS_KEY=your-cosmos-key-here
+COSMOS_DB=qu_chat
+COSMOS_CONTAINER=conversations
+
+# Chat Configuration
+HISTORY_PAIRS=3
+MAX_HISTORY_PAIRS=50
+
+# Local Knowledge Base Path
+ABOUT_QU_PATH=kb/about_qu.md
