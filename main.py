@@ -6,7 +6,6 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from dotenv import load_dotenv, find_dotenv
-
 from search_client import run_search, HAVE_SEARCH
 
 load_dotenv(find_dotenv(), override=True)
@@ -26,7 +25,6 @@ try:
 except FileNotFoundError:
     ABOUT_QU_TEXT = ""
 
-# ---------- Azure OpenAI client ----------
 from openai import AzureOpenAI
 aoai = AzureOpenAI(
     azure_endpoint=AOAI_ENDPOINT,
@@ -42,7 +40,6 @@ except Exception as e:
     HAVE_CHAT_HISTORY = False
     logging.warning(f"QU Chat History Manager not available: {e}")
 
-# Global chat history manager (will be initialized per session)
 chat_history_managers = {}
 
 def get_chat_history_manager(session_id: Optional[str] = None) -> QUChatHistoryManager:
@@ -222,7 +219,6 @@ def _aoai_answer_direct(mode: str, question: str, context: str, sources: str, hi
         logging.error(f"Full traceback: {traceback.format_exc()}")
         return "I apologize, but I'm having trouble processing your request right now. Please try again in a moment."
 
-# ---------- Endpoints ----------
 @app.get("/")
 def root():
     return {
@@ -348,10 +344,8 @@ async def chat(body: ChatReq, request: Request):
         elif any(word in question_lower for word in about_qu_keywords):
             mode = "ABOUT_QU"
         else:
-            # Default to ADMISSIONS for general queries
             mode = "ADMISSIONS"
 
-        # Build context & sources per mode
         hits: List[Dict] = []
         context = ""
         sources = ""
@@ -447,7 +441,6 @@ async def chat(body: ChatReq, request: Request):
             }
         )
 
-# ---------- Session Management Endpoints ----------
 
 @app.post("/session/new")
 def create_new_session(body: SessionReq = None):
