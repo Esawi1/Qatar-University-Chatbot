@@ -1,0 +1,100 @@
+# Environment variables and secrets
+.env
+.env.local
+.env.production
+.env.*
+!.env.example
+
+# Configuration files with sensitive data
+appsettings.json
+config.json
+secrets.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environment
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+logs/
+*.log
+
+# Cache
+cache/
+temp/
+.cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Deployment
+deployment.zip
+*.zip
+deployment/
+deploy.bat
+create_deployment_package.bat
+
+# Backup files
+*.backup
+.env.backup
+
+# Azure specific
+.azure/
+azure-pipelines.yml
+
+# IDE and editor files
+.vscode/settings.json
+.vscode/launch.json
+.idea/workspace.xml
+.idea/tasks.xml
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Logs and monitoring
+*.log
+logs/
+monitoring/
